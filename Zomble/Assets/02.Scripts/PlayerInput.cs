@@ -36,7 +36,7 @@ public class PlayerInput : MonoBehaviour
     void Update() // 매프레임 사용자 입력을 감지
     {
         // 게임오버 상태에서는 사용자 입력을 감지하지 않음
-        if(GameManager.instance != null && GameManager.instance.isGameover)
+        if (GameManager.instance != null && GameManager.instance.isGameover)
         {
             move = 0; rotate = 0; fire = false; reload = false;
             return;
@@ -50,5 +50,15 @@ public class PlayerInput : MonoBehaviour
         fire = Input.GetButton(fireButtonName);
         // reload에 관한 입력 감지
         reload = Input.GetButtonDown(reloadButtonName);
+    }
+
+    /// <summary>
+    /// 움직임처리 메서드
+    /// </summary>
+    /// <param name="속도">움직임 이동 속력</param>
+    /// <param name="방향성">방향성</param>
+    public void Movement(int speed, float a)
+    {
+
     }
 }
