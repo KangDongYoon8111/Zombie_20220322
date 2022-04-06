@@ -42,11 +42,25 @@ public class Gun : MonoBehaviour
     private void Awake()
     {
         // 사용할 컴포넌트의 참조 가져오기
+        gunAudioPlayer = GetComponent<AudioSource>();
+        bulletLineRenderer = GetComponent<LineRenderer>();
+
+        // 사용할 점을 두 개로 변경
+        bulletLineRenderer.positionCount = 2;
+        // 라인 렌더러를 비활성화
+        bulletLineRenderer.enabled = false;
     }
 
     private void OnEnable()
     {
-        // 총 상태 초기화
+        // 전체 예비 탄알 양을 초기화
+        ammoRemain = gunData.startAmmoRemain;
+        // 현재 탄창을 가득 채우기
+        magAmmo = gunData.magCapacity;
+        // 총의 현재 상태를 총을 쏠 준비가 된 상태로 변경
+        state = State.Ready;
+        // 마지막으로 총을 쏜 시점을 초기화
+        lastFireTime = 0;
     }
 
     public void Fire() // 발사 시도
@@ -61,6 +75,18 @@ public class Gun : MonoBehaviour
 
     private IEnumerator ShotEffect(Vector3 hitposition)
     {
+        // 총구 화염 효과 재생
+        muzzleFlashEffect.Play();
+        // 탄피 배출 효과 재생
+        shellEjectEffect.Play();
+
+        // 총격 소리 재생
+        gunAudioPlayer.PlayOneShot(gunData.shotClip);
+
+        // 선의 시작점은 총구의 위치
+        bulletLineRenderer.SetPosition(0, fireTransform.position);
+        // 선의 끝점은 입력으로 들어온 충돌 위치
+        bulletLineRenderer.SetPosition(1, hitposition);
         // 라인 렌더러를 활성화하여 탄알 궤적을 그림
         bulletLineRenderer.enabled = true;
 
