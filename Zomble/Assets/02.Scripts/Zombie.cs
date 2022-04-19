@@ -52,14 +52,26 @@ public class Zombie : LivingEntity
     }
 
     // 좀비 AI의 초기 스펙을 결정하는 셋업 메서드
-    /*public void Setup(ZombieData zombieData)
+    public void Setup(ZombieData zombieData)
     {
-
+        // 체력 설정
+        startingHealth = zombieData.health;
+        health = zombieData.health;
+        // 공격력 설정
+        damage = zombieData.damage;
+        // 내비메시 에이전트의 이동 속도 설정
+        navMeshAgent.speed = zombieData.speed;
+        // pathFinder.speed
+        // 렌더러가 사용 중인 머터리얼의 컬러를 변경.
+        // enemyRenderer.material
+        zombieRenderer.material.color = 
+            zombieData.skinColor;
     }
-    */
+
     void Start()
     {
         // 게임 오브젝트 활성화와 동시에 AI의 추적 루틴 시작
+        StartCoroutine(UpdataPath());
     }
 
     void Update()
@@ -74,6 +86,39 @@ public class Zombie : LivingEntity
         // 살아있는 동안 무한 루프
         while (!dead)
         {
+            if (hasTarget)
+            {
+                // 추적 대상 존재 : 경로를 갱신하고 AI 이동을 계속 진행
+                navMeshAgent.isStopped = false;
+                navMeshAgent.SetDestination(targetEntity.transform.position);
+            }
+            else
+            {
+                // 추적 대상 없음 : AI 이동 중지
+                navMeshAgent.isStopped = true;
+
+                // 20유닛의 반지름을 가진 가상의 구를 그렸을 때 구와 겹치는 모든 콜라이더를 가져옴
+                // 단, whatIsTarget 레이어를 가진 콜라이더만 가져오도록 필터링
+                Collider[] colliders = Physics.OverlapSphere(transform.position, 20f, whatIsTarget);
+
+                // 모든 콜라이더를 순회하면서 살아 있는 LivingEntity 찾기
+                for(int i = 0; i < colliders.Length; i++)
+                {
+                    // 콜라이더로부터 LivingEntity 컴포넌트 가져오기
+                    LivingEntity livingEntity = colliders[i].GetComponent<LivingEntity>();
+
+                    // LivingEntity 컴포넌트가 존재하며, 해당 LivingEntity가 살아 있다면,
+                    if(livingEntity != null && !livingEntity.dead)
+                    {
+                        // 추적 대상을 해당 LivingEntity로 설정
+                        targetEntity = livingEntity;
+
+                        // for 문 루프 즉시 정지
+                        break;
+                    }
+                }
+            }
+
             // 0.25초 주기로 처리 반복
             yield return new WaitForSeconds(0.25f);
         }
@@ -82,6 +127,18 @@ public class Zombie : LivingEntity
     // 대미지를 입었을 때 실행할 처리
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
+        // 아직 사망하지 않은 경우에만 피격 효과 재생
+        if (!dead)
+        {
+            // 공격받은 지점과 방향으로 파티클 효과 재생
+            hitEffect.transform.position = hitPoint;
+            hitEffect.transform.rotation = Quaternion.LookRotation(hitNormal);
+            hitEffect.Play();
+
+            // 피격 효과음 재생
+            zombieAudioPlayer.PlayOneShot(hitSound);
+        }
+
         // LivingEntity의 OnDamage()를 실행하여 대미지 적용
         base.OnDamage(damage, hitPoint, hitNormal);
     }
