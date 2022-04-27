@@ -186,7 +186,7 @@ public class Gun : MonoBehaviour
         // 탄창을 채움
         magAmmo += ammoToFill;
         // 남은 탄알에서 탄창에 채운만큼 탄알을 뺌
-        ammoRemain -= ammoRemain;
+        ammoRemain -= ammoToFill;
 
         // 총의 현재 상태를 발사 준비된 상태로 변경
         state = State.Ready;
