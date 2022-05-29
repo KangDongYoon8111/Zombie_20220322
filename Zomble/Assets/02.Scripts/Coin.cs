@@ -1,14 +1,14 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class Coin : MonoBehaviour, IItem
 {
-    public int score = 200; // Áõ°¡ÇÒ Á¡¼ö
+    public int score = 200; // ì¦ê°€í•  ì ìˆ˜
 
     public void Use(GameObject target)
     {
-        // °ÔÀÓ ¸Å´ÏÀú¿¡ Á¢±ÙÇØ Á¡¼ö Ãß°¡
+        // ê²Œì„ ë§¤ë‹ˆì €ì— ì ‘ê·¼í•´ ì ìˆ˜ ì¶”ê°€
         GameManager.instance.AddScore(score);
-        // »ç¿ëµÇ¾úÀ¸¹Ç·Î ÀÚ½ÅÀ» ÆÄ±«
+        // ì‚¬ìš©ë˜ì—ˆìœ¼ë¯€ë¡œ ìì‹ ì„ íŒŒê´´
         Destroy(gameObject);
     }
 }

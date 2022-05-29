@@ -1,22 +1,22 @@
-using UnityEngine;
-using UnityEngine.UI; // UI °ü·Ã ÄÚµå
+ï»¿using UnityEngine;
+using UnityEngine.UI; // UI ê´€ë ¨ ì½”ë“œ
 
-// ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍÀÇ »ı¸íÃ¼·Î¼­ÀÇ µ¿ÀÛÀ» ´ã´ç
+// í”Œë ˆì´ì–´ ìºë¦­í„°ì˜ ìƒëª…ì²´ë¡œì„œì˜ ë™ì‘ì„ ë‹´ë‹¹
 public class PlayerHealth : LivingEntity
 {
-    public Slider healthSlider; // Ã¼·ÂÀ» Ç¥½ÃÇÒ UI ½½¶óÀÌ´õ
+    public Slider healthSlider; // ì²´ë ¥ì„ í‘œì‹œí•  UI ìŠ¬ë¼ì´ë”
 
-    public AudioClip deathClip; // »ç¸Á ¼Ò¸®
-    public AudioClip hitClip; // ÇÇ°İ ¼Ò¸®
-    public AudioClip itemPickupClip; // ¾ÆÀÌÅÛ ½Àµæ ¼Ò¸®
+    public AudioClip deathClip; // ì‚¬ë§ ì†Œë¦¬
+    public AudioClip hitClip; // í”¼ê²© ì†Œë¦¬
+    public AudioClip itemPickupClip; // ì•„ì´í…œ ìŠµë“ ì†Œë¦¬
 
-    private AudioSource playerAudioPlayer; // ÇÃ·¹ÀÌ¾î ¼Ò¸® Àç»ı±â
-    private Animator playerAnimator; // ÇÃ·¹ÀÌ¾îÀÇ ¾Ö´Ï¸ŞÀÌÅÍ
+    private AudioSource playerAudioPlayer; // í”Œë ˆì´ì–´ ì†Œë¦¬ ì¬ìƒê¸°
+    private Animator playerAnimator; // í”Œë ˆì´ì–´ì˜ ì• ë‹ˆë©”ì´í„°
 
-    private PlayerMovement playerMovement; // ÇÃ·¹ÀÌ¾î ¿òÁ÷ÀÓ ÄÄÆ÷³ÍÆ®
-    private PlayerShooter playerShooter; // ÇÃ·¹ÀÌ¾î ½´ÅÍ ÄÄÆ÷³ÍÆ®
+    private PlayerMovement playerMovement; // í”Œë ˆì´ì–´ ì›€ì§ì„ ì»´í¬ë„ŒíŠ¸
+    private PlayerShooter playerShooter; // í”Œë ˆì´ì–´ ìŠˆí„° ì»´í¬ë„ŒíŠ¸
 
-    private void Awake() // »ç¿ëÇÒ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+    private void Awake() // ì‚¬ìš©í•  ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
     {
         playerAudioPlayer = GetComponent<AudioSource>();
         playerAnimator = GetComponent<Animator>();
@@ -26,78 +26,78 @@ public class PlayerHealth : LivingEntity
 
     protected override void OnEnable()
     {
-        // LivingEntityÀÇ OnEnable() ½ÇÇà(»óÅÂ ÃÊ±âÈ­)
+        // LivingEntityì˜ OnEnable() ì‹¤í–‰(ìƒíƒœ ì´ˆê¸°í™”)
         base.OnEnable();
 
-        // Ã¼·Â ½½¶óÀÌ´õ È°¼ºÈ­
+        // ì²´ë ¥ ìŠ¬ë¼ì´ë” í™œì„±í™”
         healthSlider.gameObject.SetActive(true);
-        // Ã¼·Â ½½¶óÀÌ´õÀÇ ÃÖ´ñ°ªÀ» ±âº» Ã¼·Â°ªÀ¸·Î º¯°æ
+        // ì²´ë ¥ ìŠ¬ë¼ì´ë”ì˜ ìµœëŒ“ê°’ì„ ê¸°ë³¸ ì²´ë ¥ê°’ìœ¼ë¡œ ë³€ê²½
         healthSlider.maxValue = startingHealth;
-        // Ã¼·Â ½½¶óÀÌ´õÀÇ °ªÀ» ÇöÀç Ã¼·Â°ªÀ¸·Î º¯°æ
+        // ì²´ë ¥ ìŠ¬ë¼ì´ë”ì˜ ê°’ì„ í˜„ì¬ ì²´ë ¥ê°’ìœ¼ë¡œ ë³€ê²½
         healthSlider.value = health;
 
-        // ÇÃ·¹ÀÌ¾î Á¶ÀÛÀ» ¹Ş´Â ÄÄÆ÷³ÍÆ® È°¼ºÈ­
+        // í”Œë ˆì´ì–´ ì¡°ì‘ì„ ë°›ëŠ” ì»´í¬ë„ŒíŠ¸ í™œì„±í™”
         playerMovement.enabled = true;
         playerShooter.enabled = true;
     }
 
-    // Ã¼·Â È¸º¹
+    // ì²´ë ¥ íšŒë³µ
     public override void RestoreHealth(float newHealth)
     {
-        // LivingEntityÀÇ RestoreHealth() ½ÇÇà(Ã¼·Â Áõ°¡)
+        // LivingEntityì˜ RestoreHealth() ì‹¤í–‰(ì²´ë ¥ ì¦ê°€)
         base.RestoreHealth(newHealth);
 
-        // °»½ÅµÈ Ã¼·ÂÀ¸·Î Ã¼·Â ½½¶óÀÌ´õ °»½Å
+        // ê°±ì‹ ëœ ì²´ë ¥ìœ¼ë¡œ ì²´ë ¥ ìŠ¬ë¼ì´ë” ê°±ì‹ 
         healthSlider.value = health;
     }
 
-    // ´ë¹ÌÁö Ã³¸®
+    // ëŒ€ë¯¸ì§€ ì²˜ë¦¬
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (!dead)
         {
-            // »ç¸ÁÇÏÁö ¾ÊÀº °æ¿ì¿¡¸¸ È¿°úÀ½ Àç»ı
+            // ì‚¬ë§í•˜ì§€ ì•Šì€ ê²½ìš°ì—ë§Œ íš¨ê³¼ìŒ ì¬ìƒ
             playerAudioPlayer.PlayOneShot(hitClip);
         }
-        // LivingEntityÀÇ OnDamage() ½ÇÇà(´ë¹ÌÁö Àû¿ë)
+        // LivingEntityì˜ OnDamage() ì‹¤í–‰(ëŒ€ë¯¸ì§€ ì ìš©)
         base.OnDamage(damage, hitPoint, hitNormal);
-        // °»½ÅµÈ Ã¼·ÂÀ» Ã¼·Â ½½¶óÀÌ´õ¿¡ ¹İ¿µ
+        // ê°±ì‹ ëœ ì²´ë ¥ì„ ì²´ë ¥ ìŠ¬ë¼ì´ë”ì— ë°˜ì˜
         healthSlider.value = health;
     }
 
     public override void Die()
     {
-        // LivingEntityÀÇ Die() ½ÇÇà(»ç¸Á Àû¿ë)
+        // LivingEntityì˜ Die() ì‹¤í–‰(ì‚¬ë§ ì ìš©)
         base.Die();
 
-        // Ã¼·Â ½½¶óÀÌ´õ ºñÈ°¼ºÈ­
+        // ì²´ë ¥ ìŠ¬ë¼ì´ë” ë¹„í™œì„±í™”
         healthSlider.gameObject.SetActive(false);
 
-        // »ç¸ÁÀ½ Àç»ı
+        // ì‚¬ë§ìŒ ì¬ìƒ
         playerAudioPlayer.PlayOneShot(deathClip);
-        // ¾Ö´Ï¸ŞÀÌÅÍÀÇ Die Æ®¸®°Å¸¦ ¹ßµ¿½ÃÄÑ »ç¸Á ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+        // ì• ë‹ˆë©”ì´í„°ì˜ Die íŠ¸ë¦¬ê±°ë¥¼ ë°œë™ì‹œì¼œ ì‚¬ë§ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
         playerAnimator.SetTrigger("Die");
 
-        // ÇÃ·¹ÀÌ¾î Á¶ÀÛÀ» ¹Ş´Â ÄÄÆ÷³ÍÆ® ºñÈ°¼ºÈ­
+        // í”Œë ˆì´ì–´ ì¡°ì‘ì„ ë°›ëŠ” ì»´í¬ë„ŒíŠ¸ ë¹„í™œì„±í™”
         playerMovement.enabled = false;
         playerShooter.enabled = false;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // ¾ÆÀÌÅÛ°ú Ãæµ¹ÇÑ °æ¿ì ÇØ´ç ¾ÆÀÌÅÛÀ» »ç¿ëÇÏ´Â Ã³¸®
-        // »ç¸ÁÇÏÁö ¾ÊÀº °æ¿ì¿¡¸¸ ¾ÆÀÌÅÛ »ç¿ë °¡´É
+        // ì•„ì´í…œê³¼ ì¶©ëŒí•œ ê²½ìš° í•´ë‹¹ ì•„ì´í…œì„ ì‚¬ìš©í•˜ëŠ” ì²˜ë¦¬
+        // ì‚¬ë§í•˜ì§€ ì•Šì€ ê²½ìš°ì—ë§Œ ì•„ì´í…œ ì‚¬ìš© ê°€ëŠ¥
         if (!dead)
         {
-            // Ãæµ¹ÇÑ »ó´ë¹æÀ¸·ÎºÎÅÍ IItem ÄÄÆ÷³ÍÆ® °¡Á®¿À±â ½Ãµµ
+            // ì¶©ëŒí•œ ìƒëŒ€ë°©ìœ¼ë¡œë¶€í„° IItem ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸° ì‹œë„
             IItem item = other.GetComponent<IItem>();
 
-            // Ãæµ¹ÇÑ »ó´ë¹æÀ¸·ÎºÎÅÍ IItem ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿À´Â µ¥ ¼º°øÇß´Ù¸é
+            // ì¶©ëŒí•œ ìƒëŒ€ë°©ìœ¼ë¡œë¶€í„° IItem ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì„±ê³µí–ˆë‹¤ë©´
             if(item != null)
             {
-                // Use ¸Ş¼­µå¸¦ ½ÇÇàÇÏ¿© ¾ÆÀÌÅÛ »ç¿ë
+                // Use ë©”ì„œë“œë¥¼ ì‹¤í–‰í•˜ì—¬ ì•„ì´í…œ ì‚¬ìš©
                 item.Use(gameObject);
-                // ¾ÆÀÌÅÛ ½Àµæ ¼Ò¸® Àç»ı
+                // ì•„ì´í…œ ìŠµë“ ì†Œë¦¬ ì¬ìƒ
                 playerAudioPlayer.PlayOneShot(itemPickupClip);
             }
         }

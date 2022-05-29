@@ -1,58 +1,89 @@
-using System;
+ï»¿using System;
+using Photon.Pun;
 using UnityEngine;
 
-// »ı¸íÃ¼·Î µ¿ÀÛÇÒ °ÔÀÓ ¿ÀºêÁ§Æ®µéÀ» À§ÇÑ »À´ë¸¦ Á¦°ø
-// Ã¼·Â, ´ë¹ÌÁö ¹Ş¾ÆµéÀÌ±â, »ç¸Á ±â´É, »ç¸Á ÀÌº¥Æ®¸¦ Á¦°ø
-public class LivingEntity : MonoBehaviour, IDamageble
+// ìƒëª…ì²´ë¡œ ë™ì‘í•  ê²Œì„ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ìœ„í•œ ë¼ˆëŒ€ë¥¼ ì œê³µ
+// ì²´ë ¥, ëŒ€ë¯¸ì§€ ë°›ì•„ë“¤ì´ê¸°, ì‚¬ë§ ê¸°ëŠ¥, ì‚¬ë§ ì´ë²¤íŠ¸ë¥¼ ì œê³µ
+public class LivingEntity : MonoBehaviourPun, IDamageble
 {
-    public float startingHealth = 100; // ½ÃÀÛ Ã¼·Â
-    public float health { get; protected set; } // ÇöÀç Ã¼·Â
-    public bool dead { get; protected set; } // »ç¸Á »óÅÂ
-    public event Action onDeath; // »ç¸Á ½Ã ¹ßµ¿ÇÒ ÀÌº¥Æ®
+    public float startingHealth = 100; // ì‹œì‘ ì²´ë ¥
+    public float health { get; protected set; } // í˜„ì¬ ì²´ë ¥
+    public bool dead { get; protected set; } // ì‚¬ë§ ìƒíƒœ
+    public event Action onDeath; // ì‚¬ë§ ì‹œ ë°œë™í•  ì´ë²¤íŠ¸
 
-    // »ı¸íÃ¼°¡ È°¼ºÈ­µÉ ¶§ »óÅÂ¸¦ ¸®¼Â
-    protected virtual void OnEnable()
+    // í˜¸ìŠ¤íŠ¸->ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ ë°©í–¥ìœ¼ë¡œ ì²´ë ¥ê³¼ ì‚¬ë§ ìƒíƒœë¥¼ ë™ê¸°í™”í•˜ëŠ” ë©”ì„œë“œ
+    [PunRPC]
+    public void ApplyUpdateHealth(float newHealth, bool newDead)
     {
-        dead = false; // »ç¸ÁÇÏÁö ¾ÊÀº »óÅÂ·Î ½ÃÀÛ
-        health = startingHealth; // Ã¼·ÂÀ» ½ÃÀÛ Ã¼·ÂÀ¸·Î ÃÊ±âÈ­
+        health = newHealth;
+        dead = newDead;
     }
 
-    // ´ë¹ÌÁö¸¦ ÀÔ´Â ±â´É
+    // ìƒëª…ì²´ê°€ í™œì„±í™”ë  ë•Œ ìƒíƒœë¥¼ ë¦¬ì…‹
+    protected virtual void OnEnable()
+    {
+        dead = false; // ì‚¬ë§í•˜ì§€ ì•Šì€ ìƒíƒœë¡œ ì‹œì‘
+        health = startingHealth; // ì²´ë ¥ì„ ì‹œì‘ ì²´ë ¥ìœ¼ë¡œ ì´ˆê¸°í™”
+    }
+
+    // ëŒ€ë¯¸ì§€ ì²˜ë¦¬
+    // í˜¸ìŠ¤íŠ¸ì—ì„œ ë¨¼ì € ë‹¨ë… ì‹¤í–‰ë˜ê³ , í˜¸ìŠ¤íŠ¸ë¥¼ í†µí•´ ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì¼ê´„ ì‹¤í–‰ë¨
+    [PunRPC]
     public virtual void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
-        // ´ë¹ÌÁö¸¸Å­ Ã¼·Â °¨¼Ò
-        health -= damage;
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // ëŒ€ë¯¸ì§€ë§Œí¼ ì²´ë ¥ ê°ì†Œ
+            health -= damage;
 
-        // Ã¼·ÂÀÌ 0 ÀÌÇÏ && ¾ÆÁ÷ Á×Áö ¾Ê¾Ò´Ù¸é »ç¸Á Ã³¸® ½ÇÇà
+            // í˜¸ìŠ¤íŠ¸ì—ì„œ í´ë¼ì´ì–¸íŠ¸ë¡œ ë™ê¸°í™”
+            photonView.RPC("ApplyUpdatedHealth", RpcTarget.Others, health, dead);
+            photonView.RPC("ApplyUpdatedHealth", RpcTarget.MasterClient, health, dead);
+
+            // ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ë„ OnDamageë¥¼ ì‹¤í–‰í•˜ë„ë¡ í•¨
+            photonView.RPC("OnDamage", RpcTarget.Others, damage, hitPoint, hitNormal);
+        }
+
+        // ì²´ë ¥ì´ 0 ì´í•˜ && ì•„ì§ ì£½ì§€ ì•Šì•˜ë‹¤ë©´ ì‚¬ë§ ì²˜ë¦¬ ì‹¤í–‰
         if (health <= 0 && !dead)
         {
             Die();
         }
     }
 
-    // Ã¼·ÂÀ» È¸º¹ÇÏ´Â ±â´É
+    // ì²´ë ¥ì„ íšŒë³µí•˜ëŠ” ê¸°ëŠ¥
+    [PunRPC]
     public virtual void RestoreHealth(float newHealth)
     {
         if (dead)
         {
-            // ÀÌ¹Ì »ç¸ÁÇÑ °æ¿ì Ã¼·ÂÀ» È¸º¹ÇÒ ¼ö ¾øÀ½
+            // ì´ë¯¸ ì‚¬ë§í•œ ê²½ìš° ì²´ë ¥ì„ íšŒë³µí•  ìˆ˜ ì—†ìŒ
             return;
         }
 
-        // Ã¼·Â Ãß°¡
-        health += newHealth;
+        // í˜¸ìŠ¤íŠ¸ë§Œ ì²´ë ¥ì„ ì§ì ‘ ê°±ì‹  ê°€ëŠ¥
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // ì²´ë ¥ ì¶”ê°€
+            health += newHealth;
+            // ì„œë²„ì—ì„œ í´ë¼ì´ì–¸íŠ¸ë¡œ ë™ê¸°í™”
+            photonView.RPC("ApplyUpdatedHealth", RpcTarget.Others, health, dead);
+
+            // ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ë„ RestoreHealthë¥¼ ì‹¤í–‰í•˜ë„ë¡ í•¨
+            photonView.RPC("RestoreHealth", RpcTarget.Others, newHealth);
+        }
     }
 
-    // »ç¸Á Ã³¸®
+    // ì‚¬ë§ ì²˜ë¦¬
     public virtual void Die()
     {
-        // onDeath ÀÌº¥Æ®¿¡ µî·ÏµÈ ¸Ş¼­µå°¡ ÀÖ´Ù¸é ½ÇÇà
-        if(onDeath != null)
+        // onDeath ì´ë²¤íŠ¸ì— ë“±ë¡ëœ ë©”ì„œë“œê°€ ìˆë‹¤ë©´ ì‹¤í–‰
+        if (onDeath != null)
         {
             onDeath();
         }
 
-        // »ç¸Á »óÅÂ¸¦ ÂüÀ¸·Î º¯°æ
+        // ì‚¬ë§ ìƒíƒœë¥¼ ì°¸ìœ¼ë¡œ ë³€ê²½
         dead = true;
     }
 }

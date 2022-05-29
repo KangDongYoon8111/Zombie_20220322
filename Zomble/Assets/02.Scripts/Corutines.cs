@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,12 +29,12 @@ public class Corutines : MonoBehaviour
     IEnumerator CleaningHouse()
     {
         Debug.Log("A Room");
-        // A¹æ Ã»¼Ò
-        yield return new WaitForSeconds(10f); // 10ÃÊ µ¿¾È ½¬±â
+        // Aë°© ì²­ì†Œ
+        yield return new WaitForSeconds(10f); // 10ì´ˆ ë™ì•ˆ ì‰¬ê¸°
         Debug.Log("B Room");
-        // B¹æ Ã»¼Ò
-        yield return new WaitForSeconds(20f); // 20ÃÊ µ¿¾È ½¬±â
-        // C¹æ Ã»¼Ò
+        // Bë°© ì²­ì†Œ
+        yield return new WaitForSeconds(20f); // 20ì´ˆ ë™ì•ˆ ì‰¬ê¸°
+        // Cë°© ì²­ì†Œ
         Debug.Log("C Room");
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,23 +6,23 @@ public class AmmoPack : MonoBehaviour, IItem
 {
     public int ammo = 30;
 
-    // target¿¡ Åº¾ËÀ» Ãß°¡ÇÏ´Â Ã³¸®
+    // targetì— íƒ„ì•Œì„ ì¶”ê°€í•˜ëŠ” ì²˜ë¦¬
     public void Use(GameObject target)
     {
-        // Àü´Ş¹ŞÀº °ÔÀÓ ¿ÀºêÁ§Æ®·ÎºÎÅÍ PlayerShooter ÄÄÆ÷³ÍÆ® 
-        // °¡Á®¿À±â ½Ãµµ
+        // ì „ë‹¬ë°›ì€ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¡œë¶€í„° PlayerShooter ì»´í¬ë„ŒíŠ¸ 
+        // ê°€ì ¸ì˜¤ê¸° ì‹œë„
         PlayerShooter playerShooter = 
             target.GetComponent<PlayerShooter>();
 
-        // PlayerShooter ÄÄÆ÷³ÍÆ®°¡ ÀÖÀ¸¸é¼­
-        // ÃÑ ¿ÀºêÁ§Æ®°¡ Á¸ÀçÇÏ¸é
+        // PlayerShooter ì»´í¬ë„ŒíŠ¸ê°€ ìˆìœ¼ë©´ì„œ
+        // ì´ ì˜¤ë¸Œì íŠ¸ê°€ ì¡´ì¬í•˜ë©´
         if(playerShooter != null && playerShooter.gun != null)
         {
-            // ÃÑÀÇ ³²Àº Åº¾Ë ¼ö¸¦ ammo ¸¸Å­ ´õÇÔ
+            // ì´ì˜ ë‚¨ì€ íƒ„ì•Œ ìˆ˜ë¥¼ ammo ë§Œí¼ ë”í•¨
             playerShooter.gun.ammoRemain += ammo;
         }
 
-        // »ç¿ëµÇ¾úÀ¸¹Ç·Î ÀÚ½ÅÀ» ÆÄ±«
+        // ì‚¬ìš©ë˜ì—ˆìœ¼ë¯€ë¡œ ìì‹ ì„ íŒŒê´´
         Destroy(gameObject);
     }
 }

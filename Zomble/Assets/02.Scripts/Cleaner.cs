@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 public class Cleaner : MonoBehaviour
@@ -21,11 +21,11 @@ public class Cleaner : MonoBehaviour
 
     void CleaningRoomA()
     {
-        Debug.Log("A¹æ Ã»¼Ò");
+        Debug.Log("Aë°© ì²­ì†Œ");
     }
 
     void CleaningRoomB()
     {
-        Debug.Log("B¹æ Ã»¼Ò");
+        Debug.Log("Bë°© ì²­ì†Œ");
     }
 }

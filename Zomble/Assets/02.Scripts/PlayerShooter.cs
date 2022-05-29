@@ -1,80 +1,82 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using Photon.Pun;
 using UnityEngine;
 
-// ÁÖ¾îÁø Gun ¿ÀºêÁ§Æ®¸¦ ½î°Å³ª ÀçÀåÀü
-// ¾Ë¸ÂÀº ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Àç»ıÇÏ°í IK¸¦ »ç¿ëÇØ
-// Ä³¸¯ÅÍ ¾ç¼ÕÀÌ ÃÑ¿¡ À§Ä¡ÇÏµµ·Ï Á¶Á¤
-public class PlayerShooter : MonoBehaviour
+// ì£¼ì–´ì§„ Gun ì˜¤ë¸Œì íŠ¸ë¥¼ ì˜ê±°ë‚˜ ì¬ì¥ì „
+// ì•Œë§ì€ ì• ë‹ˆë©”ì´ì…˜ì„ ì¬ìƒí•˜ê³  IKë¥¼ ì‚¬ìš©í•´
+// ìºë¦­í„° ì–‘ì†ì´ ì´ì— ìœ„ì¹˜í•˜ë„ë¡ ì¡°ì •
+public class PlayerShooter : MonoBehaviourPun
 {
-    public Gun gun; // »ç¿ëÇÒ ÃÑ
-    public Transform gunPivot; // ÃÑ ¹èÄ¡ÀÇ ±âÁØÁ¡
-    public Transform leftHandMount; // ÃÑÀÇ ¿ŞÂÊ ¼ÕÀâÀÌ, ¿Ş¼ÕÀÌ À§Ä¡ÇÒ ÁöÁ¡
-    public Transform rightHandMount; // ÃÑÀÇ ¿À¸¥ÂÊ ¼ÕÀâÀÌ, ¿À¸¥¼ÕÀÌ À§Ä¡ÇÒ ÁöÁ¡
+    public Gun gun; // ì‚¬ìš©í•  ì´
+    public Transform gunPivot; // ì´ ë°°ì¹˜ì˜ ê¸°ì¤€ì 
+    public Transform leftHandMount; // ì´ì˜ ì™¼ìª½ ì†ì¡ì´, ì™¼ì†ì´ ìœ„ì¹˜í•  ì§€ì 
+    public Transform rightHandMount; // ì´ì˜ ì˜¤ë¥¸ìª½ ì†ì¡ì´, ì˜¤ë¥¸ì†ì´ ìœ„ì¹˜í•  ì§€ì 
 
-    private PlayerInput playerInput; // ÇÃ·¹ÀÌ¾îÀÇ ÀÔ·Â
-    private Animator playerAnimator; // ¾Ö´Ï¸ŞÀÌÅÍ ÄÄÆ÷³ÍÆ®
+    private PlayerInput playerInput; // í”Œë ˆì´ì–´ì˜ ì…ë ¥
+    private Animator playerAnimator; // ì• ë‹ˆë©”ì´í„° ì»´í¬ë„ŒíŠ¸
 
 
-    void Start() // »ç¿ëÇÒ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+    void Start() // ì‚¬ìš©í•  ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
     {
         playerInput = GetComponent<PlayerInput>();
         playerAnimator = GetComponent<Animator>();
     }
 
-    private void OnEnable() // ½´ÅÍ°¡ È°¼ºÈ­µÉ ¶§ ÃÑµµ ÇÔ²² È°¼ºÈ­
+    private void OnEnable() // ìŠˆí„°ê°€ í™œì„±í™”ë  ë•Œ ì´ë„ í•¨ê»˜ í™œì„±í™”
     {
         gun.gameObject.SetActive(true);
     }
 
-    private void OnDisable() // ½´ÅÍ°¡ ºñÈ°¼ºÈ­µÉ ¶§ ÃÑµµ ÇÔ²² ºñÈ°¼ºÈ­
+    private void OnDisable() // ìŠˆí„°ê°€ ë¹„í™œì„±í™”ë  ë•Œ ì´ë„ í•¨ê»˜ ë¹„í™œì„±í™”
     {
         gun.gameObject.SetActive(false);
     }
 
-    void Update() // ÀÔ·ÂÀ» °¨ÁöÇÏ°í ÃÑÀ» ¹ß»çÇÏ°Å³ª ÀçÀåÀü
+    void Update() // ì…ë ¥ì„ ê°ì§€í•˜ê³  ì´ì„ ë°œì‚¬í•˜ê±°ë‚˜ ì¬ì¥ì „
     {
+        // ë¡œì»¬ í”Œë ˆì´ì–´ë§Œ ì´ì„ ì§ì ‘ ì‚¬ê²©, íƒ„ì•Œ UI ê°±ì‹  ê°€ëŠ¥
+        if(!photonView.IsMine) return;
+
         if (playerInput.fire)
         {
-            // ¹ß»ç ÀÔ·Â °¨Áö ½Ã ÃÑ ¹ß»ç
+            // ë°œì‚¬ ì…ë ¥ ê°ì§€ ì‹œ ì´ ë°œì‚¬
             gun.Fire();
         }
         else if (playerInput.reload)
         {
-            // ÀçÀåÀü ÀÔ·Â °¨Áö ½Ã ÀçÀåÀü
+            // ì¬ì¥ì „ ì…ë ¥ ê°ì§€ ì‹œ ì¬ì¥ì „
             if (gun.Reload())
             {
-                // ÀçÀåÀü ¼º°ø ½Ã¿¡¸¸ ÀçÀåÀü ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+                // ì¬ì¥ì „ ì„±ê³µ ì‹œì—ë§Œ ì¬ì¥ì „ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
                 playerAnimator.SetTrigger("Reload");
             }
         }
 
-        // ³²Àº Åº¾Ë UI °»½Å
+        // ë‚¨ì€ íƒ„ì•Œ UI ê°±ì‹ 
         UpdateUI();
     }
 
-    private void UpdateUI() // Åº¾Ë UI °»½Å
+    private void UpdateUI() // íƒ„ì•Œ UI ê°±ì‹ 
     {
         if(gun != null && UIManager.instance != null)
         {
-            // UI ¸Å´ÏÀúÀÇ Åº¾Ë ÅØ½ºÆ®¿¡ ÅºÃ¢ÀÇ Åº¾Ë°ú ³²Àº ÀüÃ¼ Åº¾Ë Ç¥½Ã
+            // UI ë§¤ë‹ˆì €ì˜ íƒ„ì•Œ í…ìŠ¤íŠ¸ì— íƒ„ì°½ì˜ íƒ„ì•Œê³¼ ë‚¨ì€ ì „ì²´ íƒ„ì•Œ í‘œì‹œ
             UIManager.instance.UpdateAmmoText(gun.magAmmo, gun.ammoRemain);
         }
     }
 
-    private void OnAnimatorIK(int layerIndex) // ¾Ö´Ï¸ŞÀÌÅÍÀÇ IK °»½Å
+    private void OnAnimatorIK(int layerIndex) // ì• ë‹ˆë©”ì´í„°ì˜ IK ê°±ì‹ 
     {
-        // ÃÑÀÇ ±âÁØÁ¡ gunPivotÀ» 3D ¸ğµ¨À» ¿À¸¥ÂÊ ÆÈ²ŞÄ¡ À§Ä¡·Î ÀÌµ¿
+        // ì´ì˜ ê¸°ì¤€ì  gunPivotì„ 3D ëª¨ë¸ì„ ì˜¤ë¥¸ìª½ íŒ”ê¿ˆì¹˜ ìœ„ì¹˜ë¡œ ì´ë™
         gunPivot.position = playerAnimator.GetIKHintPosition(AvatarIKHint.RightElbow);
 
-        // IK¸¦ »ç¿ëÇÏ¿© ¿Ş¼ÕÀÇ À§Ä¡¿Í È¸ÀüÀ» ÃÑÀÇ ¿ŞÂÊ ¼ÕÀâÀÌ¿¡ ¸ÂÃã
+        // IKë¥¼ ì‚¬ìš©í•˜ì—¬ ì™¼ì†ì˜ ìœ„ì¹˜ì™€ íšŒì „ì„ ì´ì˜ ì™¼ìª½ ì†ì¡ì´ì— ë§ì¶¤
         playerAnimator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1.0f);
         playerAnimator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1.0f);
 
         playerAnimator.SetIKPosition(AvatarIKGoal.LeftHand, leftHandMount.position);
         playerAnimator.SetIKRotation(AvatarIKGoal.LeftHand, leftHandMount.rotation); ;
 
-        // IK¸¦ »ç¿ëÇÏ¿© ¿À¸¥¼ÕÀÇ À§Ä¡¿Í È¸ÀüÀ» ÃÑÀÇ ¿À¸¥ÂÊ ¼ÕÀâÀÌ¿¡ ¸ÂÃã
+        // IKë¥¼ ì‚¬ìš©í•˜ì—¬ ì˜¤ë¥¸ì†ì˜ ìœ„ì¹˜ì™€ íšŒì „ì„ ì´ì˜ ì˜¤ë¥¸ìª½ ì†ì¡ì´ì— ë§ì¶¤
         playerAnimator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1.0f);
         playerAnimator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1.0f);
 
