@@ -1,2 +1,7 @@
-# Zombie_20220322
- (게임콘텐츠 제작)유니티 활용 게임 콘텐츠 제작자 양성과정
+# 20220606 Issue
+## Error Check
+ Point 1
+ Failed to 'network-remove' GameObject. Client is neither owner nor MasterClient taking over for owner who left: View 1019 on HealthPack(Clone) 
+ 
+ Point 2
+ Ev Destroy Failed. Could not find PhotonView with instantiationId 1018. Sent by actorNr: 1
