@@ -1,25 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using Photon.Pun;
 using UnityEngine;
 
-public class HealthPack : MonoBehaviour, IItem
+public class HealthPack : MonoBehaviourPun, IItem
 {
     public float health = 50;
 
     public void Use(GameObject target)
     {
-        // Àü´Ş¹ŞÀº °ÔÀÓ ¿ÀºêÁ§Æ®·ÎºÎÅÍ LivingEntity ÄÄÆ÷³ÍÆ®
-        // °¡Á®¿À±â ½Ãµµ
+        // ì „ë‹¬ë°›ì€ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¡œë¶€í„° LivingEntity ì»´í¬ë„ŒíŠ¸
+        // ê°€ì ¸ì˜¤ê¸° ì‹œë„
         LivingEntity life = target.GetComponent<LivingEntity>();
 
-        // LivingEntity ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é
+        // LivingEntity ì»´í¬ë„ŒíŠ¸ê°€ ìˆë‹¤ë©´
         if(life != null)
         {
-            // Ã¼·Â È¸º¹ ½ÇÇà
+            // ì²´ë ¥ íšŒë³µ ì‹¤í–‰
             life.RestoreHealth(health);
         }
 
-        // »ç¿ëµÇ¾úÀ¸¹Ç·Î ÀÚ½ÅÀ» ÆÄ±«
-        Destroy(gameObject);
+        // ì‚¬ìš©ë˜ì—ˆìœ¼ë¯€ë¡œ ìì‹ ì„ íŒŒê´´ -> ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ì„œ ìì‹  íŒŒê´´
+        // Destroy(gameObject);
+        PhotonNetwork.Destroy(gameObject);
     }
 }

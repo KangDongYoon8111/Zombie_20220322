@@ -1,83 +1,100 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections;
+using Photon.Pun;
 using UnityEngine;
-using UnityEngine.AI; // ³»ºñ¸Ş½Ã °ü·Ã ÄÚµå
+using UnityEngine.AI; // ë‚´ë¹„ë©”ì‹œ ê´€ë ¨ ì½”ë“œ
 
-// ÁÖ±âÀûÀ¸·Î ¾ÆÀÌÅÛÀ» ÇÃ·¹ÀÌ¾î ±ÙÃ³¿¡ »ı¼ºÇÏ´Â ½ºÅ©¸³Æ®
-public class ItemSpanwer : MonoBehaviour
+// ì£¼ê¸°ì ìœ¼ë¡œ ì•„ì´í…œì„ í”Œë ˆì´ì–´ ê·¼ì²˜ì— ìƒì„±í•˜ëŠ” ìŠ¤í¬ë¦½íŠ¸
+public class ItemSpanwer : MonoBehaviourPun
 {
-    public GameObject[] items; // »ı¼ºÇÒ ¾ÆÀÌÅÛ
-    public Transform playerTransform; // ÇÃ·¹ÀÌ¾îÀÇ Æ®·£½ºÆû
+    public GameObject[] items; // ìƒì„±í•  ì•„ì´í…œ
+    //public Transform playerTransform; // í”Œë ˆì´ì–´ì˜ íŠ¸ëœìŠ¤í¼
 
-    // ÇÃ·¹ÀÌ¾î À§Ä¡¿¡¼­ ¾ÆÀÌÅÛÀÌ ¹èÄ¡µÉ ÃÖ´ë ¹İ°æ
+    // í”Œë ˆì´ì–´ ìœ„ì¹˜ì—ì„œ ì•„ì´í…œì´ ë°°ì¹˜ë  ìµœëŒ€ ë°˜ê²½
     public float maxDistance = 5f;
 
-    public float timeBetSpawnMax = 7f; // ÃÖ´ë ½Ã°£ °£°İ
-    public float timeBetSpawnMin = 2f; // ÃÖ¼Ò ½Ã°£ °£°İ
-    private float timeBetSpawn; // »ı¼º °£°İ
+    public float timeBetSpawnMax = 7f; // ìµœëŒ€ ì‹œê°„ ê°„ê²©
+    public float timeBetSpawnMin = 2f; // ìµœì†Œ ì‹œê°„ ê°„ê²©
+    private float timeBetSpawn; // ìƒì„± ê°„ê²©
 
-    private float lastSpawnTime; // ¸¶Áö¸· »ı¼º ½ÃÁ¡
+    private float lastSpawnTime; // ë§ˆì§€ë§‰ ìƒì„± ì‹œì 
 
     void Start()
     {
-        // »ı¼º °£°İ°ú ¸¶Áö¸· »ı¼º ½ÃÁ¡ ÃÊ±âÈ­
+        // ìƒì„± ê°„ê²©ê³¼ ë§ˆì§€ë§‰ ìƒì„± ì‹œì  ì´ˆê¸°í™”
         timeBetSpawn = Random.Range(timeBetSpawnMin, timeBetSpawnMax);
         lastSpawnTime = 0;
     }
 
-    // ÁÖ±âÀûÀ¸·Î ¾ÆÀÌÅÛ »ı¼º Ã³¸® ½ÇÇà
+    // ì£¼ê¸°ì ìœ¼ë¡œ ì•„ì´í…œ ìƒì„± ì²˜ë¦¬ ì‹¤í–‰
     void Update()
     {
-        // ÇöÀç ½ÃÁ¡ÀÌ ¸¶Áö¸· »ı¼º ½ÃÁ¡¿¡¼­ »ı¼º ÁÖ±â ÀÌ»ó Áö³²
-        // && ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍ°¡ Á¸ÀçÇÔ
-        if (Time.time >= lastSpawnTime + timeBetSpawn 
-            && playerTransform != null)
+        // í˜¸ìŠ¤íŠ¸ì—ì„œë§Œ ì•„ì´í…œ ì§ì ‘ ìƒì„± ê°€ëŠ¥
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        // í˜„ì¬ ì‹œì ì´ ë§ˆì§€ë§‰ ìƒì„± ì‹œì ì—ì„œ ìƒì„± ì£¼ê¸° ì´ìƒ ì§€ë‚¨
+        if (Time.time >= lastSpawnTime + timeBetSpawn)
         {
-            // ¸¶Áö¸· »ı¼º ½Ã°£ °»½Å
+            // ë§ˆì§€ë§‰ ìƒì„± ì‹œê°„ ê°±ì‹ 
             lastSpawnTime = Time.time;
-            // »ı¼º ÁÖ±â¸¦ ·£´ıÀ¸·Î º¯°æ
+            // ìƒì„± ì£¼ê¸°ë¥¼ ëœë¤ìœ¼ë¡œ ë³€ê²½
             timeBetSpawn = Random.Range(timeBetSpawnMin, timeBetSpawnMax);
-            // ¾ÆÀÌÅÛ »ı¼º ½ÇÇà
+            // ì•„ì´í…œ ìƒì„± ì‹¤í–‰
             Spawn();
         }
     }
 
-    // ½ÇÁ¦ ¾ÆÀÌÅÛ »ı¼º Ã³¸®
+    // ì‹¤ì œ ì•„ì´í…œ ìƒì„± ì²˜ë¦¬
     private void Spawn()
     {
-        // ÇÃ·¹ÀÌ¾î ±ÙÃ³¿¡¼­ ³»ºñ¸Ş½Ã À§ÀÇ ·£´ı À§Ä¡ °¡Á®¿À±â
-        Vector3 spawnPosition = GetRandomPointOnNavMesh(playerTransform.position, maxDistance);
-        // ¹Ù´Ú¿¡¼­ 0.5¸¸Å­ À§·Î ¿Ã¸®±â
+        // í”Œë ˆì´ì–´ ê·¼ì²˜ì—ì„œ ë‚´ë¹„ë©”ì‹œ ìœ„ì˜ ëœë¤ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
+        // Vector3 spawnPosition = GetRandomPointOnNavMesh(playerTransform.position, maxDistance);
+        // (0,0,0)ì„ ê¸°ì¤€ìœ¼ë¡œ maxDistance ì•ˆì—ì„œ ë‚´ë¹„ë©”ì‹œ ìœ„ì˜ ëœë¤ ìœ„ì¹˜ ì§€ì •
+        Vector3 spawnPosition = GetRandomPointOnNavMesh(Vector3.zero, maxDistance);
+        // ë°”ë‹¥ì—ì„œ 0.5ë§Œí¼ ìœ„ë¡œ ì˜¬ë¦¬ê¸°
         spawnPosition += Vector3.up * 0.5f;
 
-        // ¾ÆÀÌÅÛ Áß ÇÏ³ª¸¦ ¹«ÀÛÀ§·Î °ñ¶ó ·£´ı À§Ä¡¿¡ »ı¼º
+        // ì•„ì´í…œ ì¤‘ í•˜ë‚˜ë¥¼ ë¬´ì‘ìœ„ë¡œ ê³¨ë¼ ëœë¤ ìœ„ì¹˜ì— ìƒì„±
         GameObject selectedItem = items[Random.Range(0, items.Length)];
-        GameObject item = Instantiate(selectedItem, spawnPosition, 
-            Quaternion.identity);
+        // GameObject item = Instantiate(selectedItem, spawnPosition, Quaternion.identity);
+        // ë„¤íŠ¸ì›Œí¬ì˜ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ì„œ í•´ë‹¹ ì•„ì´í…œ ìƒì„±
+        GameObject item = PhotonNetwork.Instantiate(selectedItem.name, spawnPosition, Quaternion.identity);
 
-        // »ı¼ºµÈ ¾ÆÀÌÅÛÀ» 5ÃÊ µÚ¿¡ ÆÄ±«
-        Destroy(item, 5f);
+        // ìƒì„±ëœ ì•„ì´í…œì„ 5ì´ˆ ë’¤ì— íŒŒê´´
+        // Destroy(item, 5f);
+        StartCoroutine(DestroyAfter(item, 5f));
     }
 
-    // ³»ºñ¸Ş½Ã À§ÀÇ ·£´ıÇÑ À§Ä¡¸¦ ¹İÈ¯ÇÏ´Â ¸Ş¼­µå
-    // center¸¦ Áß½ÉÀ¸·Î distance ¹İ°æ ¾È¿¡¼­ÀÇ ·£´ıÇÑ À§Ä¡¸¦ Ã£À½
-    private Vector3 GetRandomPointOnNavMesh(Vector3 center, 
-        float distance)
+    // í¬í†¤ì˜ PhotonNetwork.Destroy()ë¥¼ ì§€ì—° ì‹¤í–‰í•˜ëŠ” ì½”ë£¨í‹´
+    IEnumerator DestroyAfter(GameObject target, float delay)
     {
-        // Center¸¦ Áß½ÉÀ¸·Î ¹İÁö¸§ÀÌ maxDistanceÀÎ ±¸ ¾È¿¡¼­ÀÇ
-        // ·£´ıÇÑ À§Ä¡ ÇÏ³ª¸¦ ÀúÀå
-        // Random.insideUnitSphere´Â ¹İÁö¸§ÀÌ 1ÀÎ ±¸ ¾È¿¡¼­ÀÇ ·£´ıÇÑ
-        // ÇÑ Á¡À» ¹İÈ¯ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+        // delayë§Œí¼ ëŒ€ê¸°
+        yield return new WaitForSeconds(delay);
+
+        // targetì´ íŒŒê´´ë˜ì§€ ì•Šì•˜ìœ¼ë©´ íŒŒê´´ ì‹¤í–‰
+        if (target != null)
+        {
+            PhotonNetwork.Destroy(target);
+        }
+    }
+
+    // ë‚´ë¹„ë©”ì‹œ ìœ„ì˜ ëœë¤í•œ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•˜ëŠ” ë©”ì„œë“œ
+    // centerë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ distance ë°˜ê²½ ì•ˆì—ì„œì˜ ëœë¤í•œ ìœ„ì¹˜ë¥¼ ì°¾ìŒ
+    private Vector3 GetRandomPointOnNavMesh(Vector3 center, float distance)
+    {
+        // Centerë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ ë°˜ì§€ë¦„ì´ maxDistanceì¸ êµ¬ ì•ˆì—ì„œì˜
+        // ëœë¤í•œ ìœ„ì¹˜ í•˜ë‚˜ë¥¼ ì €ì¥
+        // Random.insideUnitSphereëŠ” ë°˜ì§€ë¦„ì´ 1ì¸ êµ¬ ì•ˆì—ì„œì˜ ëœë¤í•œ
+        // í•œ ì ì„ ë°˜í™˜í•˜ëŠ” í”„ë¡œí¼í‹°
         Vector3 randomPos = Random.insideUnitSphere * distance + center;
 
-        // ³»ºñ¸Ş½Ã »ùÇÃ¸µÀÇ °á°ú Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼ö
+        // ë‚´ë¹„ë©”ì‹œ ìƒ˜í”Œë§ì˜ ê²°ê³¼ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜
         NavMeshHit hit;
 
-        // maxDistance ¹İ°æ ¾È¿¡¼­ randomPos¿¡ °¡Àå °¡±î¿î ³»ºñ¸Ş½Ã
-        // À§ÀÇ ÇÑ Á¡À» Ã£À½
+        // maxDistance ë°˜ê²½ ì•ˆì—ì„œ randomPosì— ê°€ì¥ ê°€ê¹Œìš´ ë‚´ë¹„ë©”ì‹œ
+        // ìœ„ì˜ í•œ ì ì„ ì°¾ìŒ
         NavMesh.SamplePosition(randomPos, out hit, distance, NavMesh.AllAreas);
 
-        // Ã£Àº Á¡ ¹İÈ¯
+        // ì°¾ì€ ì  ë°˜í™˜
         return hit.position;
     }
 }

@@ -1,88 +1,141 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
+using ExitGames.Client.Photon;
+using Photon.Pun;
 using UnityEngine;
 
-// Á»ºñ °ÔÀÓ ¿ÀºêÁ§Æ®¸¦ ÁÖ±âÀûÀ¸·Î »ı¼º
-public class ZombieSpawner : MonoBehaviour
+// ì¢€ë¹„ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ì£¼ê¸°ì ìœ¼ë¡œ ìƒì„±
+public class ZombieSpawner : MonoBehaviourPun, IPunObservable
 {
-    public Zombie zombiePrefab; // »ı¼ºÇÒ Á»ºñ ¿øº» ÇÁ¸®ÆÕ
+    public Zombie zombiePrefab; // ìƒì„±í•  ì¢€ë¹„ ì›ë³¸ í”„ë¦¬íŒ¹
 
-    public ZombieData[] zombieDatas; // »ç¿ëÇÒ Á»ºñ ¼Â¾÷ µ¥ÀÌÅÍ
-    public Transform[] spawnPoints; // Á»ºñ AI¸¦ ¼ÒÈ¯ÇÒ À§Ä¡
+    public ZombieData[] zombieDatas; // ì‚¬ìš©í•  ì¢€ë¹„ ì…‹ì—… ë°ì´í„°
+    public Transform[] spawnPoints; // ì¢€ë¹„ AIë¥¼ ì†Œí™˜í•  ìœ„ì¹˜
 
-    private List<Zombie> zombies = new List<Zombie>(); // »ı¼ºµÈ Á»ºñ¸¦ ´ã´Â ¸®½ºÆ®
-    private int wave; // ÇöÀç ¿şÀÌºê
+    private List<Zombie> zombies = new List<Zombie>(); // ìƒì„±ëœ ì¢€ë¹„ë¥¼ ë‹´ëŠ” ë¦¬ìŠ¤íŠ¸
 
-    // ¸Å ÇÁ·¹ÀÓ¸¶´Ù Á¶°ÇÀ» °Ë»çÇÏ°í Á»ºñ
-    // »ı¼º ¿şÀÌºê¸¦ ½ÇÇà.
+    private int zombieCount = 0; // ë‚¨ì€ ì¢€ë¹„ ìˆ˜
+    private int wave; // í˜„ì¬ ì›¨ì´ë¸Œ
+
+    // ì£¼ê¸°ì ìœ¼ë¡œ ìë™ ì‹¤í–‰ë˜ëŠ” ë™ê¸°í™” ë©”ì„œë“œ
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info){
+        // ë¡œì»¬ ì˜¤ë¸Œì íŠ¸ë¼ë©´ ì“°ê¸° ë¶€ë¶„ì´ ì‹¤í–‰ë¨
+        if(stream.IsWriting){
+            // ë‚¨ì€ ì¢€ë¹„ ìˆ˜ë¥¼ ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ ë³´ë‚´ê¸°
+            stream.SendNext(zombies.Count);
+            // í˜„ì¬ ì›¨ì´ë¸Œë¥¼ ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ ë³´ë‚´ê¸°
+            stream.SendNext(wave);
+        }
+        else{
+            // ë¦¬ëª¨íŠ¸ ì˜¤ë¸Œì íŠ¸ë¼ë©´ ì½ê¸° ë¶€ë¶„ì´ ì‹¤í–‰ë¨
+            // ë‚¨ì€ ì¢€ë¹„ ìˆ˜ë¥¼ ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ ë°›ê¸°
+            zombieCount = (int)stream.ReceiveNext();
+            // í˜„ì¬ ì›¨ì´ë¸Œë¥¼ ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ ë°›ê¸°
+            wave = (int)stream.ReceiveNext();
+        }
+    }
+
+    private void Awake() {
+        PhotonPeer.RegisterType(typeof(Color), 128, ColorSerialization.SerializeColor, ColorSerialization.DeserializeColor);
+    }
+
+    // ë§¤ í”„ë ˆì„ë§ˆë‹¤ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  ì¢€ë¹„
+    // ìƒì„± ì›¨ì´ë¸Œë¥¼ ì‹¤í–‰.
     void Update()
     {
-        // °ÔÀÓ¿À¹ö »óÅÂÀÏ ¶§´Â »ı¼ºÇÏÁö ¾ÊÀ½
-        if (GameManager.instance != null && GameManager.instance.isGameover)
-        {
-            return;
-        }
+        // í˜¸ìŠ¤íŠ¸ë§Œ ì¢€ë¹„ë¥¼ ì§ì ‘ ìƒì„±í•  ìˆ˜ ìˆìŒ
+        // ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ëŠ” í˜¸ìŠ¤íŠ¸ê°€ ìƒì„±í•œ ì¢€ë¹„ë¥¼ ë™ê¸°í™”ë¥¼ í†µí•´ ë°›ì•„ì˜´
+        if(PhotonNetwork.IsMasterClient){
+            // ê²Œì„ì˜¤ë²„ ìƒíƒœì¼ ë•ŒëŠ” ìƒì„±í•˜ì§€ ì•ŠìŒ
+            if (GameManager.instance != null && GameManager.instance.isGameover)
+            {
+                return;
+            }
 
-        // Á»ºñ¸¦ ¸ğµÎ ¹°¸®Ä£ °æ¿ì ´ÙÀ½ ½ºÆù ½ÇÇà
-        if(zombies.Count <= 0)
-        {
-            SpawnWave();
+            // ì¢€ë¹„ë¥¼ ëª¨ë‘ ë¬¼ë¦¬ì¹œ ê²½ìš° ë‹¤ìŒ ìŠ¤í° ì‹¤í–‰
+            if (zombies.Count <= 0)
+            {
+                SpawnWave();
+            }
         }
-        UpdateUI(); // UI °»½Å
+        
+        UpdateUI(); // UI ê°±ì‹ 
     }
 
-    // ¿şÀÌºê Á¤º¸¸¦ UI·Î Ç¥½Ã
+    // ì›¨ì´ë¸Œ ì •ë³´ë¥¼ UIë¡œ í‘œì‹œ
     private void UpdateUI()
     {
-        // ÇöÀç ¿şÀÌºê¿Í ³²Àº Á»ºñ ¼ö Ç¥½Ã
-        UIManager.instance.UpdateWaveText(wave, zombies.Count);
+        if(PhotonNetwork.IsMasterClient){
+            // í˜¸ìŠ¤íŠ¸ëŠ” ì§ì ‘ ê°±ì‹ í•œ ì¢€ë¹„ ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ìš©í•´ ë‚¨ì€ ì¢€ë¹„ ìˆ˜ í‘œì‹œ
+            // í˜„ì¬ ì›¨ì´ë¸Œì™€ ë‚¨ì€ ì¢€ë¹„ ìˆ˜ í‘œì‹œ
+            UIManager.instance.UpdateWaveText(wave, zombies.Count);
+        }
+        else{
+            // í´ë¼ì´ì–¸íŠ¸ëŠ” ì¢€ë¹„ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°±ì‹ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+            // í˜¸ìŠ¤íŠ¸ê°€ ë³´ë‚´ì¤€ zombieCountë¥¼ ì´ìš©í•´ ì¢€ë¹„ ìˆ˜ í‘œì‹œ
+            UIManager.instance.UpdateWaveText(wave, zombieCount);
+        }
     }
 
-    // ÇöÀç ¿şÀÌºê¿¡ ¸ÂÃç Á»ºñ »ı¼º
+    // í˜„ì¬ ì›¨ì´ë¸Œì— ë§ì¶° ì¢€ë¹„ ìƒì„±
     private void SpawnWave()
     {
-        // ¿şÀÌºê 1 Áõ°¡
+        // ì›¨ì´ë¸Œ 1 ì¦ê°€
         wave++;
 
-        // ÇöÀç ¿şÀÌºê * 1.5¸¦ ¹İ¿Ã¸²ÇÑ ¼ö¸¸Å­ Á»ºñ »ı¼º
+        // í˜„ì¬ ì›¨ì´ë¸Œ * 1.5ë¥¼ ë°˜ì˜¬ë¦¼í•œ ìˆ˜ë§Œí¼ ì¢€ë¹„ ìƒì„±
         int spawnCount = Mathf.RoundToInt(wave * 1.5f);
 
-        // spawnCount¸¸Å­ Á»ºñ »ı¼º
+        // spawnCountë§Œí¼ ì¢€ë¹„ ìƒì„±
         for(int i = 0; i < spawnCount; i++)
         {
-            // Á»ºñ »ı¼º Ã³¸® ½ÇÇà
+            // ì¢€ë¹„ ìƒì„± ì²˜ë¦¬ ì‹¤í–‰
             CreateZombie();
         }
     }
 
-    // Á»ºñ¸¦ »ı¼ºÇÏ°í Á»ºñ¿¡ ÃßÀûÇÒ ´ë»ó ÇÒ´ç
+    // ì¢€ë¹„ë¥¼ ìƒì„±í•˜ê³  ì¢€ë¹„ì— ì¶”ì í•  ëŒ€ìƒ í• ë‹¹
     private void CreateZombie()
     {
-        // »ç¿ëÇÒ Á»ºñ µ¥ÀÌÅÍ ·£´ıÀ¸·Î °áÁ¤
+        // ì‚¬ìš©í•  ì¢€ë¹„ ë°ì´í„° ëœë¤ìœ¼ë¡œ ê²°ì •
         ZombieData zombieData =
             zombieDatas[Random.Range(0, zombieDatas.Length)];
 
-        // »ı¼ºÇÒ À§Ä¡¸¦ ·£´ıÀ¸·Î °áÁ¤
+        // ìƒì„±í•  ìœ„ì¹˜ë¥¼ ëœë¤ìœ¼ë¡œ ê²°ì •
         Transform spawnPoint = 
             spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-        // Á»ºñ ÇÁ¸®ÆÕÀ¸·ÎºÎÅÍ Á»ºñ »ı¼º
-        Zombie zombie = Instantiate(zombiePrefab, 
-            spawnPoint.position, spawnPoint.rotation);
+        // ì¢€ë¹„ í”„ë¦¬íŒ¹ìœ¼ë¡œë¶€í„° ì¢€ë¹„ ìƒì„±. ë„¤íŠ¸ì›Œí¬ìƒì˜ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì— ìƒì„±ë¨
+        GameObject createdZombie = PhotonNetwork.Instantiate(zombiePrefab.gameObject.name, spawnPoint.position, spawnPoint.rotation);
 
-        // »ı¼ºÇÑ Á»ºñÀÇ ´É·ÂÄ¡ ¼³Á¤
-        zombie.Setup(zombieData);
+        // ìƒì„±í•œ ì¢€ë¹„ë¥¼ ì…‹ì—…í•˜ê¸° ìœ„í•´ Zombie ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì˜´
+        Zombie zombie = createdZombie.GetComponent<Zombie>();
 
-        // »ı¼ºµÈ Á»ºñ¸¦ ¸®½ºÆ®¿¡ Ãß°¡
+        // ìƒì„±í•œ ì¢€ë¹„ì˜ ëŠ¥ë ¥ì¹˜ ì„¤ì •
+        zombie.photonView.RPC("Setup", RpcTarget.All, zombieData.health, zombieData.damage, zombieData.speed, zombieData.skinColor);
+
+        // ìƒì„±ëœ ì¢€ë¹„ë¥¼ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
         zombies.Add(zombie);
-        // Á»ºñÀÇ onDeath ÀÌº¥Æ®¿¡ ÀÍ¸í ¸Ş¼­µå µî·Ï
-        // »ç¸ÁÇÑ Á»ºñ¸¦ ¸®½ºÆ®¿¡¼­ Á¦°Å
+
+        // ì¢€ë¹„ì˜ onDeath ì´ë²¤íŠ¸ì— ìµëª… ë©”ì„œë“œ ë“±ë¡
+        // ì‚¬ë§í•œ ì¢€ë¹„ë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
         zombie.onDeath += () => zombies.Remove(zombie);
-        // »ç¸ÁÇÑ Á»ºñ¸¦ 10ÃÊ µÚ¿¡ ÆÄ±«
-        zombie.onDeath += 
-            () => Destroy(zombie.gameObject, 10f);
-        // Á»ºñ »ç¸Á ½Ã Á¡¼ö »ó½Â
-        zombie.onDeath += 
-            () => GameManager.instance.AddScore(100);
+        // ì‚¬ë§í•œ ì¢€ë¹„ë¥¼ 10ì´ˆ ë’¤ì— íŒŒê´´
+        //zombie.onDeath += () => Destroy(zombie.gameObject, 10f);
+        zombie.onDeath += () => StartCoroutine(DestroyAfter(zombie.gameObject, 10f));
+        // ì¢€ë¹„ ì‚¬ë§ ì‹œ ì ìˆ˜ ìƒìŠ¹
+        zombie.onDeath += () => GameManager.instance.AddScore(100);
+    }
+
+    // í¬í†¤ì˜ Network.Destory()ëŠ” ì§€ì—°íŒŒê´´ë¥¼ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì§€ì—° íŒŒê´´ë¥¼ ì§ì ‘ êµ¬í˜„í•¨
+    IEnumerator DestroyAfter(GameObject target, float delay){
+        // delayë§Œí¼ ì‰¬ê³ 
+        yield return new WaitForSeconds(delay);
+
+        // targetì´ ì•„ì§ íŒŒê´´ë˜ì§€ ì•Šì•˜ë‹¤ë©´
+        if(target != null){
+            // targetì„ ëª¨ë“  ë„¤íŠ¸ì›Œí¬ìƒì—ì„œ íŒŒê´´
+            PhotonNetwork.Destroy(target);
+        }
     }
 }

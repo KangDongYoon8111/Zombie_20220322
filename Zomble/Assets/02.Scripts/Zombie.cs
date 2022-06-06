@@ -1,194 +1,205 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections;
+using Photon.Pun;
 using UnityEngine;
-using UnityEngine.AI; // AI, ³»ºñ°ÔÀÌ¼Ç ½Ã½ºÅÛ °ü·Ã ÄÚµå °¡Á®¿À±â
+using UnityEngine.AI; // AI, ë‚´ë¹„ê²Œì´ì…˜ ì‹œìŠ¤í…œ ê´€ë ¨ ì½”ë“œ ê°€ì ¸ì˜¤ê¸°
 
-// Á»ºñAI ±¸Çö
+// ì¢€ë¹„AI êµ¬í˜„
 public class Zombie : LivingEntity
 {
-    public LayerMask whatIsTarget; // ÃßÀû ´ë»ó ·¹ÀÌ¾î
+    public LayerMask whatIsTarget; // ì¶”ì  ëŒ€ìƒ ë ˆì´ì–´
 
-    private LivingEntity targetEntity; // ÃßÀû ´ë»ó
-    private NavMeshAgent navMeshAgent; // °æ·Î °è»ê AI ¿¡ÀÌÀüÆ®
+    private LivingEntity targetEntity; // ì¶”ì  ëŒ€ìƒ
+    private NavMeshAgent navMeshAgent; // ê²½ë¡œ ê³„ì‚° AI ì—ì´ì „íŠ¸
 
-    public ParticleSystem hitEffect; // ÇÇ°İ ½Ã Àç»ıÇÒ ÆÄÆ¼Å¬ È¿°ú
-    public AudioClip deathSound; // »ç¸Á ½Ã Àç»ıÇÒ ¼Ò¸®
-    public AudioClip hitSound; // ÇÇ°İ ½Ã Àç»ıÇÒ ¼Ò¸®
+    public ParticleSystem hitEffect; // í”¼ê²© ì‹œ ì¬ìƒí•  íŒŒí‹°í´ íš¨ê³¼
+    public AudioClip deathSound; // ì‚¬ë§ ì‹œ ì¬ìƒí•  ì†Œë¦¬
+    public AudioClip hitSound; // í”¼ê²© ì‹œ ì¬ìƒí•  ì†Œë¦¬
 
-    private Animator zombieAnimator; // ¾Ö´Ï¸ŞÀÌÅÍ ÄÄÆ÷³ÍÆ®
-    private AudioSource zombieAudioPlayer; // ¿Àµğ¿À ¼Ò½º ÄÄÆ÷³ÍÆ®
-    private Renderer zombieRenderer; // ·»´õ·¯ ÄÄÆ÷³ÍÆ®
+    private Animator zombieAnimator; // ì• ë‹ˆë©”ì´í„° ì»´í¬ë„ŒíŠ¸
+    private AudioSource zombieAudioPlayer; // ì˜¤ë””ì˜¤ ì†ŒìŠ¤ ì»´í¬ë„ŒíŠ¸
+    private Renderer zombieRenderer; // ë Œë”ëŸ¬ ì»´í¬ë„ŒíŠ¸
 
-    public float damage = 20f; // °ø°İ·Â
-    public float timeBetAttack = 0.5f; // °ø°İ °£°İ
-    private float lastAttackTime; // ¸¶Áö¸· °ø°İ ½ÃÁ¡
+    public float damage = 20f; // ê³µê²©ë ¥
+    public float timeBetAttack = 0.5f; // ê³µê²© ê°„ê²©
+    private float lastAttackTime; // ë§ˆì§€ë§‰ ê³µê²© ì‹œì 
 
-    // ÃßÀûÇÒ ´ë»óÀÌ Á¸ÀçÇÏ´ÂÁö ¾Ë·ÁÁÖ´Â ÇÁ·ÎÆÛÆ¼
+    // ì¶”ì í•  ëŒ€ìƒì´ ì¡´ì¬í•˜ëŠ”ì§€ ì•Œë ¤ì£¼ëŠ” í”„ë¡œí¼í‹°
     private bool hasTarget
     {
         get
         {
-            // ÃßÀûÇÒ ´ë»óÀÌ Á¸ÀçÇÏ°í, ´ë»óÀÌ »ç¸ÁÇÏÁö ¾Ê¾Ò´Ù¸é true
+            // ì¶”ì í•  ëŒ€ìƒì´ ì¡´ì¬í•˜ê³ , ëŒ€ìƒì´ ì‚¬ë§í•˜ì§€ ì•Šì•˜ë‹¤ë©´ true
             if(targetEntity != null && !targetEntity.dead)
             {
                 return true;
             }
 
-            // ±×·¸Áö ¾Ê´Ù¸é false
+            // ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ false
             return false;
         }
     }
 
-    private void Awake() // ÃÊ±âÈ­
+    private void Awake() // ì´ˆê¸°í™”
     {
-        // °ÔÀÓ ¿ÀºêÁ§Æ®·ÎºÎÅÍ »ç¿ëÇÒ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+        // ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¡œë¶€í„° ì‚¬ìš©í•  ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
         navMeshAgent = GetComponent<NavMeshAgent>();
         zombieAnimator = GetComponent<Animator>();
         zombieAudioPlayer = GetComponent<AudioSource>();
 
-        // ·»´õ·¯ ÄÄÆ÷³ÍÆ®´Â ÀÚ½Ä °ÔÀÓ ¿ÀºêÁ§Æ®¿¡ ÀÖÀ¸¹Ç·Î
-        // GetComponentInChildren() ¸Ş¼­µå »ç¿ë
+        // ë Œë”ëŸ¬ ì»´í¬ë„ŒíŠ¸ëŠ” ìì‹ ê²Œì„ ì˜¤ë¸Œì íŠ¸ì— ìˆìœ¼ë¯€ë¡œ
+        // GetComponentInChildren() ë©”ì„œë“œ ì‚¬ìš©
         zombieRenderer = GetComponentInChildren<Renderer>();
     }
 
-    // Á»ºñ AIÀÇ ÃÊ±â ½ºÆåÀ» °áÁ¤ÇÏ´Â ¼Â¾÷ ¸Ş¼­µå
-    public void Setup(ZombieData zombieData)
+    // ì¢€ë¹„ AIì˜ ì´ˆê¸° ìŠ¤í™ì„ ê²°ì •í•˜ëŠ” ì…‹ì—… ë©”ì„œë“œ
+    [PunRPC]
+    public void Setup(float newHealth, float newDamage, float newSpeed, Color skinColor)
     {
-        // Ã¼·Â ¼³Á¤
-        startingHealth = zombieData.health;
-        health = zombieData.health;
-        // °ø°İ·Â ¼³Á¤
-        damage = zombieData.damage;
-        // ³»ºñ¸Ş½Ã ¿¡ÀÌÀüÆ®ÀÇ ÀÌµ¿ ¼Óµµ ¼³Á¤
-        navMeshAgent.speed = zombieData.speed;
+        // ì²´ë ¥ ì„¤ì •
+        startingHealth = newHealth;
+        health = newHealth;
+        // ê³µê²©ë ¥ ì„¤ì •
+        damage = newDamage;
+        // ë‚´ë¹„ë©”ì‹œ ì—ì´ì „íŠ¸ì˜ ì´ë™ ì†ë„ ì„¤ì •
+        navMeshAgent.speed = newSpeed;
         // pathFinder.speed
-        // ·»´õ·¯°¡ »ç¿ë ÁßÀÎ ¸ÓÅÍ¸®¾óÀÇ ÄÃ·¯¸¦ º¯°æ.
+        // ë Œë”ëŸ¬ê°€ ì‚¬ìš© ì¤‘ì¸ ë¨¸í„°ë¦¬ì–¼ì˜ ì»¬ëŸ¬ë¥¼ ë³€ê²½.
         // enemyRenderer.material
-        zombieRenderer.material.color = 
-            zombieData.skinColor;
+        zombieRenderer.material.color = skinColor;
     }
 
     void Start()
     {
-        // °ÔÀÓ ¿ÀºêÁ§Æ® È°¼ºÈ­¿Í µ¿½Ã¿¡ AIÀÇ ÃßÀû ·çÆ¾ ½ÃÀÛ
+        // í˜¸ìŠ¤íŠ¸ê°€ ì•„ë‹ˆë¼ë©´ AIì˜ ì¶”ì  ë£¨í‹´ì„ ì‹¤í–‰í•˜ì§€ ì•ŠìŒ
+        if(!PhotonNetwork.IsMasterClient) return;
+
+        // ê²Œì„ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ì™€ ë™ì‹œì— AIì˜ ì¶”ì  ë£¨í‹´ ì‹œì‘
         StartCoroutine(UpdataPath());
     }
 
     void Update()
     {
-        // ÃßÀû ´ë»óÀÇ Á¸Àç ¿©ºÎ¿¡ µû¶ó ´Ù¸¥ ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+        // í˜¸ìŠ¤íŠ¸ê°€ ì•„ë‹ˆë¼ë©´ ì• ë‹ˆë©”ì´ì…˜ì˜ íŒŒë¼ë¯¸í„°ë¥¼ ì§ì ‘ ê°±ì‹ í•˜ì§€ ì•ŠìŒ
+        // í˜¸ìŠ¤íŠ¸ê°€ íŒŒë¼ë¯¸í„°ë¥¼ ê°±ì‹ í•˜ë©´ í´ë¼ì´ì–¸íŠ¸ì— ìë™ìœ¼ë¡œ ì „ë‹¬ë˜ê¸° ë•Œë¬¸
+        if(!PhotonNetwork.IsMasterClient) return;
+
+        // ì¶”ì  ëŒ€ìƒì˜ ì¡´ì¬ ì—¬ë¶€ì— ë”°ë¼ ë‹¤ë¥¸ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
         zombieAnimator.SetBool("HasTarget", hasTarget);
     }
 
-    // ÁÖ±âÀûÀ¸·Î ÃßÀûÇÒ ´ë»óÀÇ À§Ä¡¸¦ Ã£¾Æ °æ·Î °»½Å
+    // ì£¼ê¸°ì ìœ¼ë¡œ ì¶”ì í•  ëŒ€ìƒì˜ ìœ„ì¹˜ë¥¼ ì°¾ì•„ ê²½ë¡œ ê°±ì‹ 
     private IEnumerator UpdataPath()
     {
-        // »ì¾ÆÀÖ´Â µ¿¾È ¹«ÇÑ ·çÇÁ
+        // ì‚´ì•„ìˆëŠ” ë™ì•ˆ ë¬´í•œ ë£¨í”„
         while (!dead)
         {
             if (hasTarget)
             {
-                // ÃßÀû ´ë»ó Á¸Àç : °æ·Î¸¦ °»½ÅÇÏ°í AI ÀÌµ¿À» °è¼Ó ÁøÇà
+                // ì¶”ì  ëŒ€ìƒ ì¡´ì¬ : ê²½ë¡œë¥¼ ê°±ì‹ í•˜ê³  AI ì´ë™ì„ ê³„ì† ì§„í–‰
                 navMeshAgent.isStopped = false;
                 navMeshAgent.SetDestination(targetEntity.transform.position);
             }
             else
             {
-                // ÃßÀû ´ë»ó ¾øÀ½ : AI ÀÌµ¿ ÁßÁö
+                // ì¶”ì  ëŒ€ìƒ ì—†ìŒ : AI ì´ë™ ì¤‘ì§€
                 navMeshAgent.isStopped = true;
 
-                // 20À¯´ÖÀÇ ¹İÁö¸§À» °¡Áø °¡»óÀÇ ±¸¸¦ ±×·ÈÀ» ¶§ ±¸¿Í °ãÄ¡´Â ¸ğµç Äİ¶óÀÌ´õ¸¦ °¡Á®¿È
-                // ´Ü, whatIsTarget ·¹ÀÌ¾î¸¦ °¡Áø Äİ¶óÀÌ´õ¸¸ °¡Á®¿Àµµ·Ï ÇÊÅÍ¸µ
+                // 20ìœ ë‹›ì˜ ë°˜ì§€ë¦„ì„ ê°€ì§„ ê°€ìƒì˜ êµ¬ë¥¼ ê·¸ë ¸ì„ ë•Œ êµ¬ì™€ ê²¹ì¹˜ëŠ” ëª¨ë“  ì½œë¼ì´ë”ë¥¼ ê°€ì ¸ì˜´
+                // ë‹¨, whatIsTarget ë ˆì´ì–´ë¥¼ ê°€ì§„ ì½œë¼ì´ë”ë§Œ ê°€ì ¸ì˜¤ë„ë¡ í•„í„°ë§
                 Collider[] colliders = Physics.OverlapSphere(transform.position, 20f, whatIsTarget);
 
-                // ¸ğµç Äİ¶óÀÌ´õ¸¦ ¼øÈ¸ÇÏ¸é¼­ »ì¾Æ ÀÖ´Â LivingEntity Ã£±â
+                // ëª¨ë“  ì½œë¼ì´ë”ë¥¼ ìˆœíšŒí•˜ë©´ì„œ ì‚´ì•„ ìˆëŠ” LivingEntity ì°¾ê¸°
                 for(int i = 0; i < colliders.Length; i++)
                 {
-                    // Äİ¶óÀÌ´õ·ÎºÎÅÍ LivingEntity ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+                    // ì½œë¼ì´ë”ë¡œë¶€í„° LivingEntity ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
                     LivingEntity livingEntity = colliders[i].GetComponent<LivingEntity>();
 
-                    // LivingEntity ÄÄÆ÷³ÍÆ®°¡ Á¸ÀçÇÏ¸ç, ÇØ´ç LivingEntity°¡ »ì¾Æ ÀÖ´Ù¸é,
+                    // LivingEntity ì»´í¬ë„ŒíŠ¸ê°€ ì¡´ì¬í•˜ë©°, í•´ë‹¹ LivingEntityê°€ ì‚´ì•„ ìˆë‹¤ë©´,
                     if(livingEntity != null && !livingEntity.dead)
                     {
-                        // ÃßÀû ´ë»óÀ» ÇØ´ç LivingEntity·Î ¼³Á¤
+                        // ì¶”ì  ëŒ€ìƒì„ í•´ë‹¹ LivingEntityë¡œ ì„¤ì •
                         targetEntity = livingEntity;
 
-                        // for ¹® ·çÇÁ Áï½Ã Á¤Áö
+                        // for ë¬¸ ë£¨í”„ ì¦‰ì‹œ ì •ì§€
                         break;
                     }
                 }
             }
 
-            // 0.25ÃÊ ÁÖ±â·Î Ã³¸® ¹İº¹
+            // 0.25ì´ˆ ì£¼ê¸°ë¡œ ì²˜ë¦¬ ë°˜ë³µ
             yield return new WaitForSeconds(0.25f);
         }
     }
 
-    // ´ë¹ÌÁö¸¦ ÀÔ¾úÀ» ¶§ ½ÇÇàÇÒ Ã³¸®
+    // ëŒ€ë¯¸ì§€ë¥¼ ì…ì—ˆì„ ë•Œ ì‹¤í–‰í•  ì²˜ë¦¬
+    [PunRPC]
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
-        // ¾ÆÁ÷ »ç¸ÁÇÏÁö ¾ÊÀº °æ¿ì¿¡¸¸ ÇÇ°İ È¿°ú Àç»ı
+        // ì•„ì§ ì‚¬ë§í•˜ì§€ ì•Šì€ ê²½ìš°ì—ë§Œ í”¼ê²© íš¨ê³¼ ì¬ìƒ
         if (!dead)
         {
-            // °ø°İ¹ŞÀº ÁöÁ¡°ú ¹æÇâÀ¸·Î ÆÄÆ¼Å¬ È¿°ú Àç»ı
+            // ê³µê²©ë°›ì€ ì§€ì ê³¼ ë°©í–¥ìœ¼ë¡œ íŒŒí‹°í´ íš¨ê³¼ ì¬ìƒ
             hitEffect.transform.position = hitPoint;
             hitEffect.transform.rotation = Quaternion.LookRotation(hitNormal);
             hitEffect.Play();
 
-            // ÇÇ°İ È¿°úÀ½ Àç»ı
+            // í”¼ê²© íš¨ê³¼ìŒ ì¬ìƒ
             zombieAudioPlayer.PlayOneShot(hitSound);
         }
 
-        // LivingEntityÀÇ OnDamage()¸¦ ½ÇÇàÇÏ¿© ´ë¹ÌÁö Àû¿ë
+        // LivingEntityì˜ OnDamage()ë¥¼ ì‹¤í–‰í•˜ì—¬ ëŒ€ë¯¸ì§€ ì ìš©
         base.OnDamage(damage, hitPoint, hitNormal);
     }
 
-    // »ç¸ÁÃ³¸®
+    // ì‚¬ë§ì²˜ë¦¬
     public override void Die()
     {
-        // LivingEntityÀÇ Die()¸¦ ½ÇÇàÇÏ¿© ±âº» »ç¸Á Ã³¸® ½ÇÇà
+        // LivingEntityì˜ Die()ë¥¼ ì‹¤í–‰í•˜ì—¬ ê¸°ë³¸ ì‚¬ë§ ì²˜ë¦¬ ì‹¤í–‰
         base.Die();
 
-        // ´Ù¸¥ AI¸¦ ¹æÇØÇÏÁö ¾Êµµ·Ï ÀÚ½ÅÀÇ ¸ğµç Äİ¶óÀÌ´õ¸¦ ºñÈ°¼ºÈ­
+        // ë‹¤ë¥¸ AIë¥¼ ë°©í•´í•˜ì§€ ì•Šë„ë¡ ìì‹ ì˜ ëª¨ë“  ì½œë¼ì´ë”ë¥¼ ë¹„í™œì„±í™”
         Collider[] zombieColliders = GetComponents<Collider>();
         for(int i = 0; i < zombieColliders.Length; i++)
         {
             zombieColliders[i].enabled = false;
         }
 
-        // AI ÃßÀûÀ» ÁßÁöÇÏ°í ³»ºñ¸Ş½Ã ÄÄÆ÷³ÍÆ® ºñÈ°¼ºÈ­
+        // AI ì¶”ì ì„ ì¤‘ì§€í•˜ê³  ë‚´ë¹„ë©”ì‹œ ì»´í¬ë„ŒíŠ¸ ë¹„í™œì„±í™”
         navMeshAgent.isStopped = true;
         navMeshAgent.enabled = false;
 
-        // »ç¸Á ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+        // ì‚¬ë§ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
         zombieAnimator.SetTrigger("Die");
-        // »ç¸Á È¿°úÀ½ Àç»ı
+        // ì‚¬ë§ íš¨ê³¼ìŒ ì¬ìƒ
         zombieAudioPlayer.PlayOneShot(deathSound);
     }
 
     private void OnTriggerStay(Collider other)
     {
-        // Æ®¸®°Å Ãæµ¹ÇÑ »ó´ë¹æ °ÔÀÓ ¿ÀºêÁ§Æ®°¡ ÃßÀû ´ë»óÀÌ¶ó¸é °ø°İ ½ÇÇà
+        // í˜¸ìŠ¤íŠ¸ê°€ ì•„ë‹ˆë¼ë©´ ê³µê²© ì‹¤í–‰ ë¶ˆê°€
+        if(!PhotonNetwork.IsMasterClient) return;
 
-        // ÀÚ½ÅÀÌ »ç¸ÁÇÏÁö ¾Ê¾ÒÀ¸¸ç,
-        // ÃÖ±Ù °ø°İ ½ÃÁ¡¿¡¼­ timeBetAttack ÀÌ»ó ½Ã°£ÀÌ Áö³µ´Ù¸é °ø°İ °¡´É
+        // íŠ¸ë¦¬ê±° ì¶©ëŒí•œ ìƒëŒ€ë°© ê²Œì„ ì˜¤ë¸Œì íŠ¸ê°€ ì¶”ì  ëŒ€ìƒì´ë¼ë©´ ê³µê²© ì‹¤í–‰
+
+        // ìì‹ ì´ ì‚¬ë§í•˜ì§€ ì•Šì•˜ìœ¼ë©°,
+        // ìµœê·¼ ê³µê²© ì‹œì ì—ì„œ timeBetAttack ì´ìƒ ì‹œê°„ì´ ì§€ë‚¬ë‹¤ë©´ ê³µê²© ê°€ëŠ¥
         if(!dead && Time.time >= lastAttackTime + timeBetAttack)
         {
-            // »ó´ë¹æÀÇ LivingEntity Å¸ÀÔ °¡Á®¿À±â ½Ãµµ
+            // ìƒëŒ€ë°©ì˜ LivingEntity íƒ€ì… ê°€ì ¸ì˜¤ê¸° ì‹œë„
             LivingEntity attackTarget = other.GetComponent<LivingEntity>();
 
-            // »ó´ë¹æÀÇ LivingEntity°¡ ÀÚ½ÅÀÇ ÃßÀû ´ë»óÀÌ¶ó¸é °ø°İ ½ÇÇà
+            // ìƒëŒ€ë°©ì˜ LivingEntityê°€ ìì‹ ì˜ ì¶”ì  ëŒ€ìƒì´ë¼ë©´ ê³µê²© ì‹¤í–‰
             if(attackTarget != null && attackTarget == targetEntity)
             {
-                // ÃÖ±Ù °ø°İ ½Ã°£ °»½Å
+                // ìµœê·¼ ê³µê²© ì‹œê°„ ê°±ì‹ 
                 lastAttackTime = Time.time;
 
-                // »ó´ë¹æÀÇ ÇÇ°İ À§Ä¡¿Í ÇÇ°İ ¹æÇâÀ» ±Ù»ñ°ªÀ¸·Î °è»ê
+                // ìƒëŒ€ë°©ì˜ í”¼ê²© ìœ„ì¹˜ì™€ í”¼ê²© ë°©í–¥ì„ ê·¼ì‚¿ê°’ìœ¼ë¡œ ê³„ì‚°
                 Vector3 hitPoint = other.ClosestPoint(transform.position);
                 Vector3 hitNormal = transform.position - 
                     other.transform.position;
 
-                // °ø°İ ½ÇÇà
+                // ê³µê²© ì‹¤í–‰
                 attackTarget.OnDamage(damage, hitPoint, hitNormal);
             }
         }

@@ -1,72 +1,120 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using Photon.Pun;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+// ì ìˆ˜ì™€ ê²Œì„ì˜¤ë²„ ì—¬ë¶€, ê²Œì„ UIë¥¼ ê´€ë¦¬í•˜ëŠ” ê²Œì„ ë§¤ë‹ˆì €
+public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     /// <summary>
-    /// ½Ì±ÛÅÏ Á¢±Ù¿ë ÇÁ·ÎÆÛÆ¼
+    /// ì‹±ê¸€í„´ ì ‘ê·¼ìš© í”„ë¡œí¼í‹°
     /// </summary>
     public static GameManager instance
     {
         get
         {
-            // ¸¸¾à ½Ì±ÛÅÏ º¯¼ö¿¡ ¾ÆÁ÷ ¿ÀºêÁ§Æ®°¡ ÇÒ´çµÇÁö ¾Ê¾Ò´Ù¸é
-            if(m_instance == null)
+            // ë§Œì•½ ì‹±ê¸€í„´ ë³€ìˆ˜ì— ì•„ì§ ì˜¤ë¸Œì íŠ¸ê°€ í• ë‹¹ë˜ì§€ ì•Šì•˜ë‹¤ë©´
+            if (m_instance == null)
             {
-                // ¾À¿¡¼­ GameManager ¿ÀºêÁ§Æ®¸¦ Ã£¾Æ¼­ ÇÒ´ç
+                // ì”¬ì—ì„œ GameManager ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ì•„ì„œ í• ë‹¹
                 m_instance = FindObjectOfType<GameManager>();
             }
-            // ½Ì±ÛÅÏ ¿ÀºêÁ§Æ® ¹İÈ¯
+            // ì‹±ê¸€í„´ ì˜¤ë¸Œì íŠ¸ ë°˜í™˜
             return m_instance;
         }
     }
 
-    private static GameManager m_instance; // ½Ì±ÛÅÏÀÌ ÇÒ´çµÉ static º¯¼ö
+    private static GameManager m_instance; // ì‹±ê¸€í„´ì´ í• ë‹¹ë  static ë³€ìˆ˜
 
-    private int score = 0; // ÇöÀç °ÔÀÓ Á¡¼ö
-    public bool isGameover { get; private set; } // °ÔÀÓ¿À¹ö »óÅÂ
+    public GameObject playerPrefab; // ìƒì„±í•  í”Œë ˆì´ì–´ ìºë¦­í„° í”„ë¦¬íŒ¹
+
+    private int score = 0; // í˜„ì¬ ê²Œì„ ì ìˆ˜
+    public bool isGameover { get; private set; } // ê²Œì„ì˜¤ë²„ ìƒíƒœ
+
+    // ì£¼ê¸°ì ìœ¼ë¡œ ìë™ ì‹¤í–‰ë˜ëŠ” ë™ê¸°í™” ë©”ì„œë“œ
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        // ë¡œì»¬ ì˜¤ë¸Œì íŠ¸ë¼ë©´ ì“°ê¸° ë¶€ë¶„ì´ ì‹¤í–‰ë¨
+        if (stream.IsWriting)
+        {
+            // ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ score ê°’ ë³´ë‚´ê¸°
+            stream.SendNext(score);
+        }
+        else
+        {
+            // ë¦¬ëª¨íŠ¸ ì˜¤ë¸Œì íŠ¸ë¼ë©´ ì½ê¸° ë¶€ë¶„ì´ ì‹¤í–‰ë¨
+
+            // ë„¤íŠ¸ì›Œí¬ë¥¼ í†µí•´ score ê°’ ë°›ê¸°
+            score = (int)stream.ReceiveNext();
+            // ë™ê¸°í™”í•˜ì—¬ ë°›ì€ ì ìˆ˜ë¥¼ UIë¡œ í‘œì‹œ
+            UIManager.instance.UpdateScoreText(score);
+        }
+    }
 
     private void Awake()
     {
-        // ¾À¿¡ ½Ì±ÛÅÏ ¿ÀºêÁ§Æ®°¡ µÈ ´Ù¸¥ GameManager ¿ÀºêÁ§Æ®°¡ ÀÖ´Ù¸é
-        if(instance != this)
+        // ì”¬ì— ì‹±ê¸€í„´ ì˜¤ë¸Œì íŠ¸ê°€ ëœ ë‹¤ë¥¸ GameManager ì˜¤ë¸Œì íŠ¸ê°€ ìˆë‹¤ë©´
+        if (instance != this)
         {
-            // ÀÚ½ÅÀ» ÆÄ±«
+            // ìì‹ ì„ íŒŒê´´
             Destroy(gameObject);
         }
     }
 
+    // ê²Œì„ ì‹œì‘ê³¼ ë™ì‹œì— í”Œë ˆì´ì–´ê°€ ë  ê²Œì„ ì˜¤ë¸Œì íŠ¸ ìƒì„±
     void Start()
     {
-        // ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍÀÇ »ç¸Á ÀÌº¥Æ® ¹ß»ı ½Ã °ÔÀÓ¿À¹ö
-        FindObjectOfType<PlayerHealth>().onDeath += EndGame;
+        // ìƒì„±í•  ëœë¤ ìœ„ì¹˜ ì§€ì •
+        Vector3 randomSpawnPos = Random.insideUnitSphere * 5f;
+        randomSpawnPos.y = 0f;
+
+        // ë„¤íŠ¸ì›Œí¬ìƒì˜ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ì„œ ìƒì„± ì‹¤í–‰
+        // í•´ë‹¹ ê²Œì„ ì˜¤ë¸Œì íŠ¸ì˜ ì£¼ë„ê¶Œì€ ìƒì„± ë©”ì„œë“œë¥¼ ì§ì ‘ ì‹¤í–‰í•œ í´ë¼ì´ì–¸íŠ¸ì— ìˆìŒ
+        PhotonNetwork.Instantiate(playerPrefab.name, randomSpawnPos, Quaternion.identity);
+
+        // í”Œë ˆì´ì–´ ìºë¦­í„°ì˜ ì‚¬ë§ ì´ë²¤íŠ¸ ë°œìƒ ì‹œ ê²Œì„ì˜¤ë²„
+        // FindObjectOfType<PlayerHealth>().onDeath += EndGame;
     }
 
     /// <summary>
-    /// Á¡¼ö¸¦ Ãß°¡ÇÏ°í UI °»½Å
+    /// ì ìˆ˜ë¥¼ ì¶”ê°€í•˜ê³  UI ê°±ì‹ 
     /// </summary>
     /// <param name="newScore"></param>
     public void AddScore(int newScore)
     {
-        // °ÔÀÓ¿À¹ö°¡ ¾Æ´Ñ »óÅÂ¿¡¼­¸¸ Á¡¼ö Ãß°¡ °¡´É
+        // ê²Œì„ì˜¤ë²„ê°€ ì•„ë‹Œ ìƒíƒœì—ì„œë§Œ ì ìˆ˜ ì¶”ê°€ ê°€ëŠ¥
         if (!isGameover)
         {
-            // Á¡¼ö Ãß°¡
+            // ì ìˆ˜ ì¶”ê°€
             score += newScore;
-            // Á¡¼ö UI ÅØ½ºÆ® °»½Å
+            // ì ìˆ˜ UI í…ìŠ¤íŠ¸ ê°±ì‹ 
             UIManager.instance.UpdateScoreText(score);
         }
     }
 
     /// <summary>
-    /// °ÔÀÓ¿À¹ö Ã³¸®
+    /// ê²Œì„ì˜¤ë²„ ì²˜ë¦¬
     /// </summary>
     public void EndGame()
     {
-        // °ÔÀÓ¿À¹ö »óÅÂ¸¦ ÂüÀ¸·Î º¯°æ
+        // ê²Œì„ì˜¤ë²„ ìƒíƒœë¥¼ ì°¸ìœ¼ë¡œ ë³€ê²½
         isGameover = true;
-        // °ÔÀÓ¿À¹ö UI È°¼ºÈ­
+        // ê²Œì„ì˜¤ë²„ UI í™œì„±í™”
         UIManager.instance.SetActiveGameOverUI(true);
+    }
+
+    // í‚¤ë³´ë“œ ì…ë ¥ì„ ê°ì§€í•˜ê³  ë£¸ì„ ë‚˜ê°€ê²Œ í•¨
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+    }
+
+    // ë£¸ì„ ë‚˜ê°ˆ ë•Œ ìë™ ì‹¤í–‰ë˜ëŠ” ë©”ì„œë“œ
+    public override void OnLeftRoom()
+    {
+        // ë£¸ì„ ë‚˜ê°€ë©´ ë¡œë¹„ ì”¬ìœ¼ë¡œ ëŒì•„ê°
+        SceneManager.LoadScene("Lobby");
     }
 }
